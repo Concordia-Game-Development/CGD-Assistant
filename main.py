@@ -1,5 +1,5 @@
 from typing import Final
-import os
+import os, asyncio
 from dotenv import load_dotenv
 from discord import Intents, Client, Message, Embed, File
 from discord.ext import commands
@@ -8,6 +8,7 @@ from responses import getResponse
 # Load environment variables
 load_dotenv()
 TOKEN: Final[str] = os.getenv("DISCORD_TOKEN")
+extensions: Final[list[str]] = ["cogs.timer"]
 
 # Bot Setup
 intents: Intents = Intents.default()
@@ -35,11 +36,16 @@ async def help(ctx) -> None:
     help_embed.add_field(name="!timer", value="Create a timer for the weekly meetings", inline=True)
     await ctx.send(file = file,embed=help_embed)
 
+async def loadCogs() -> None:
+    for extension in extensions:
+        await client.load_extension(extension)
+
+
 # Main entry point
-def main()-> None:
-    client.run(token=TOKEN)
+async def main()-> None:
+    await loadCogs()
+    await client.start(token=TOKEN)
 
 
 if __name__ == "__main__":
-    main()
-
+    asyncio.run(main())
