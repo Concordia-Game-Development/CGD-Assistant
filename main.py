@@ -42,7 +42,7 @@ async def loadCogs() -> None:
 
 
 # Main entry point
-async def main()-> None:
+async def main() -> None:
     await loadCogs()
     await client.start(token=TOKEN)
 
