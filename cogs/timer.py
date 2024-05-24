@@ -1,9 +1,7 @@
 from discord.ext import commands
 from discord import SelectOption, ui, Button, ButtonStyle, Interaction
-# from discord import app_commands
 import asyncio
 from typing import Final
-
 
 class sDropdown(ui.Select):
     def __init__(self) -> None:
@@ -15,10 +13,10 @@ class sDropdown(ui.Select):
 
         super().__init__(placeholder="Seconds", options=options, custom_id="selectSeconds", min_values=1, max_values=1)
 
-    @ui.select(custom_id="selectSeconds")
-    async def select_seconds(self, interaction: Interaction, select: ui.Select) -> None:
-        self.seconds = int(select.values[0])
-        await interaction.response.send_message(f"Seconds set to {self.seconds}", ephemeral=True)
+    async def callback(self, interaction: Interaction) -> None:
+        self.view.seconds = int(self.values[0])
+        await interaction.response.defer()
+
 
 class mDropdown(ui.Select):
     def __init__(self) -> None:
@@ -30,10 +28,10 @@ class mDropdown(ui.Select):
             
         super().__init__(placeholder="Minutes", options=options, custom_id="selectMinutes", min_values=1, max_values=1)
 
-    @ui.select(custom_id="selectMinutes")
-    async def select_minutes(self, interaction: Interaction, select: ui.Select) -> None:
-        self.minutes = int(select.values[0])
-        await interaction.response.send_message(f"Minutes set to {self.minutes}", ephemeral=True)
+    async def callback(self, interaction: Interaction) -> None:
+        self.view.minutes = int(self.values[0])
+        await interaction.response.defer()
+
 
 class hDropdown(ui.Select):
     def __init__(self) -> None:
@@ -44,24 +42,34 @@ class hDropdown(ui.Select):
             
         super().__init__(placeholder="Hours", options=options, custom_id="selectHours", min_values=1, max_values=1)   
 
-    @ui.select(custom_id="selectHours")
-    async def select_hours(self, interaction: Interaction, select: ui.Select) -> None:
-        self.hours = int(select.values[0])
-        await interaction.response.send_message(f"Hours set to {self.hours}", ephemeral=True)
+    async def callback(self, interaction: Interaction) -> None:
+        self.view.hours = int(self.values[0])
+        await interaction.response.defer()
+
+class ConfirmButton(ui.Button):
+    def __init__(self):
+        super().__init__(label="Confirm", style=ButtonStyle.green, custom_id="confirmButton")
+
+    async def callback(self, interaction: Interaction):
+        total_seconds = self.view.seconds + (self.view.minutes * 60) + (self.view.hours * 3600)
+        if total_seconds <= 0:
+            await interaction.response.send_message("You need to set a time greater than 0 seconds.", ephemeral=True)
+        else:
+            await interaction.response.send_message(f"Timer set for {total_seconds} seconds. I'll remind you!", ephemeral=True)
+            await asyncio.sleep(total_seconds)
+            await interaction.followup.send("Time's up! gimme your money")
+
 
 class TimerView(ui.View):
     def __init__(self) -> None:
         super().__init__()
-        self.add_item(sDropdown())
-        self.add_item(mDropdown())
-        self.add_item(hDropdown())
         self.seconds = 0
         self.minutes = 0
         self.hours = 0
-    
-    async def calculate_total_seconds(self) -> int:
-        total_seconds = self.seconds + (self.minutes * 60) + (self.hours * 3600)
-        return total_seconds
+        self.add_item(hDropdown())
+        self.add_item(mDropdown())
+        self.add_item(sDropdown())
+        self.add_item(ConfirmButton())
     
     async def interaction_check(self, interaction: Interaction) -> bool:
         # Allow only the user who initiated the command to interact
@@ -75,7 +83,7 @@ class Timer(commands.Cog):
     @commands.command(aliases=["t"])
     async def timer(self, ctx: commands.Context) -> None:
         view = TimerView()
-        await ctx.send("Please provide the time using the dropdowns below:", view=view)
+        await ctx.send("Please provide the time using the dropdowns below:", view=view, ephemeral=True)
 
         # Wait for user to interact with the dropdowns
         await asyncio.sleep(15)  # Wait some time for the user to make selections
