@@ -9,7 +9,7 @@ class sDropdown(ui.Select):
         options: Final[list[SelectOption]] = []
         for i in range (60):
             if i % 15 == 0:
-                options.append(SelectOption(label=f"{i}", value=f"{i}", default=(i==0)))
+                options.append(SelectOption(label=f"{i}", value=f"{i}"))
         super().__init__(placeholder="Seconds", options=options, custom_id="selectSeconds", min_values=1, max_values=1)
 
     async def callback(self, interaction: Interaction) -> None:
@@ -22,7 +22,7 @@ class mDropdown(ui.Select):
         options: Final[list[SelectOption]] = []
         for i in range (60):
             if i % 15 == 0:
-                options.append(SelectOption(label=f"{i}", value=f"{i}", default=(i==0)))
+                options.append(SelectOption(label=f"{i}", value=f"{i}"))
         super().__init__(placeholder="Minutes", options=options, custom_id="selectMinutes", min_values=1, max_values=1)
 
     async def callback(self, interaction: Interaction) -> None:
@@ -34,10 +34,11 @@ class hDropdown(ui.Select):
     def __init__(self) -> None:
         options: Final[list[SelectOption]] = []
         for i in range (5):
-            options.append(SelectOption(label=f"{i}", value=f"{i}", default=(i==0)))
+            options.append(SelectOption(label=f"{i}", value=f"{i}"))
         super().__init__(placeholder="Hours", options=options, custom_id="selectHours", min_values=1, max_values=1)
 
     async def callback(self, interaction: Interaction) -> None:
+        # await interaction.response.send_message(content=f"Your choice: {self.values[0]}", ephemeral=True)
         self.view.hours = int(self.values[0])
         await interaction.response.defer()
 
@@ -66,10 +67,6 @@ class TimerView(ui.View):
         self.add_item(mDropdown())
         self.add_item(sDropdown())
         self.add_item(ConfirmButton())
-    
-    async def interaction_check(self, interaction: Interaction) -> bool:
-        # Allow only the user who initiated the command to interact
-        return interaction.user == interaction.message.interaction.user
 
 ### Timer command class ###
 class Timer(commands.Cog):
@@ -81,17 +78,13 @@ class Timer(commands.Cog):
         view = TimerView()
         await ctx.send("Please provide the time using the dropdowns below:", view=view, ephemeral=True)
 
-        # Wait for user to interact with the dropdowns
-        await asyncio.sleep(15)  # Wait some time for the user to make selections
+        # # Wait for user to interact with the dropdowns
+        # await asyncio.sleep(15)  # Wait some time for the user to make selections
 
-        total_seconds = await view.calculate_total_seconds()
-        if total_seconds <= 0:
-            await ctx.send("You need to set a time greater than 0 seconds.", ephemeral=True)
-            return
-
-        await ctx.send(f"Timer set for {total_seconds} seconds. I'll remind you!", ephemeral=True)
-        await asyncio.sleep(total_seconds)
-        await ctx.send(f"Time's up! gimme your money", ephemeral=True)
+        # total_seconds = await view.calculate_total_seconds()
+        # if total_seconds <= 0:
+        #     await ctx.send("You need to set a time greater than 0 seconds.", ephemeral=True)
+        #     return
 
 
 async def setup(client: commands.Bot):
