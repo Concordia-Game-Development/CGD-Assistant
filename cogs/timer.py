@@ -63,49 +63,13 @@ class hDropdown(ui.Select):
         await interaction.response.defer()
 
 
-# ### Join VC Button ###
-# class JoinVCButton(ui.Button):
-#     def __init__(self, label, style, custom_id):
-#         super().__init__(label=label, style=style, custom_id=custom_id)
-
-#     async def callback(self, interaction: Interaction):
-#         if self.custom_id == "joinYes":
-#             self.view.join_vc = True
-#         else:
-#             self.view.join_vc = False
-
-#         # Now start the timer
-#         await self.start_timer(interaction)
-
-#     async def start_timer(self, interaction: Interaction):
-#         await asyncio.sleep(self.view.total_seconds)
-#         await interaction.followup.send("Time's up! gimme your money", ephemeral=True)
-#         if self.view.join_vc:
-#             await interaction.followup.send(
-#                 "Joining the voice channel now...", ephemeral=True
-#             )
-#             # Code to join the voice channel goes here
-
-
-# ### Join VC View ###
-# class JoinVCView(ui.View):
-#     def __init__(self, total_seconds):
-#         super().__init__()
-#         self.total_seconds = total_seconds
-#         self.join_vc = False
-#         self.add_item(
-#             JoinVCButton(label="Yes", style=ButtonStyle.green, custom_id="joinYes")
-#         )
-#         self.add_item(
-#             JoinVCButton(label="No", style=ButtonStyle.danger, custom_id="joinNo")
-#         )
-
-
 ### confirm button class ###
 class ConfirmButton(ui.Button):
     def __init__(self):
         super().__init__(
-            label="Confirm", style=ButtonStyle.green, custom_id="confirmButton"
+            label="Confirm",
+            style=ButtonStyle.green,
+            custom_id="confirmButton",
         )
 
     def format_time(self, seconds):
@@ -136,6 +100,8 @@ class ConfirmButton(ui.Button):
             await interaction.response.send_message(
                 f"Timer set for {formatTime}. I'll remind you!", ephemeral=True
             )
+            await interaction.message.edit(view=None, delete_after=total_seconds + 2)
+
             await asyncio.sleep(total_seconds)
             await interaction.followup.send(
                 "Time's up! gimme your money", ephemeral=True
@@ -163,11 +129,7 @@ class Timer(commands.Cog):
     @commands.command(aliases=["t"])
     async def timer(self, ctx: commands.Context) -> None:
         view = TimerView()
-        await ctx.send(
-            "Please provide the time using the dropdowns below:",
-            view=view,
-            ephemeral=True,
-        )
+        await ctx.reply("Please provide the tie using the dropdowns below:", view=view)
 
 
 async def setup(client: commands.Bot):
