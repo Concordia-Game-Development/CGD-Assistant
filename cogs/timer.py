@@ -103,6 +103,23 @@ class ConfirmButton(ui.Button):
             await interaction.message.edit(view=None, delete_after=total_seconds + 2)
 
             await asyncio.sleep(total_seconds)
+
+            # Join the voice channel
+            if interaction.user.voice:
+                channel = interaction.user.voice.channel
+                try:
+                    await channel.connect()
+                    await interaction.followup.send(f"Joined {channel}", ephemeral=True)
+                except Exception as e:
+                    await interaction.followup.send(
+                        f"An error occurred while trying to join the voice channel: {e}",
+                        ephemeral=True,
+                    )
+            else:
+                await interaction.followup.send(
+                    "You are not connected to a voice channel.", ephemeral=True
+                )
+
             await interaction.followup.send(
                 "Time's up! gimme your money", ephemeral=True
             )
@@ -129,7 +146,7 @@ class Timer(commands.Cog):
     @commands.command(aliases=["t"])
     async def timer(self, ctx: commands.Context) -> None:
         view = TimerView()
-        await ctx.reply("Please provide the tie using the dropdowns below:", view=view)
+        await ctx.reply("Please provide the time using the dropdowns below:", view=view)
 
 
 async def setup(client: commands.Bot):
