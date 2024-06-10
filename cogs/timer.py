@@ -1,5 +1,13 @@
 from discord.ext import commands
-from discord import SelectOption, ui, Button, ButtonStyle, Interaction, Component
+from discord import (
+    SelectOption,
+    ui,
+    Button,
+    ButtonStyle,
+    Interaction,
+    Component,
+    FFmpegPCMAudio,
+)
 import asyncio
 from typing import Final
 
@@ -104,12 +112,25 @@ class ConfirmButton(ui.Button):
 
             await asyncio.sleep(total_seconds)
 
-            # Join the voice channel
             if interaction.user.voice:
                 channel = interaction.user.voice.channel
                 try:
-                    await channel.connect()
-                    await interaction.followup.send(f"Joined {channel}", ephemeral=True)
+                    # Join the voice channel
+                    VC = await channel.connect()
+                    # await interaction.followup.send(f"Joined {channel}", ephemeral=True)
+
+                    # Play sound
+                    alarm = "sounds/DONE.mp3"  # Replace with actual path
+                    source = FFmpegPCMAudio(alarm)
+                    print(source)
+                    VC.play(source)
+
+                    while VC.is_playing():
+                        await asyncio.sleep(1)
+
+                    # Disconnect after playing the sound
+                    await VC.disconnect()
+
                 except Exception as e:
                     await interaction.followup.send(
                         f"An error occurred while trying to join the voice channel: {e}",
@@ -119,6 +140,8 @@ class ConfirmButton(ui.Button):
                 await interaction.followup.send(
                     "You are not connected to a voice channel.", ephemeral=True
                 )
+
+            # Play sound from sound board
 
             await interaction.followup.send(
                 "Time's up! gimme your money", ephemeral=True
