@@ -12,6 +12,8 @@ To get started with this Discord bot, follow these steps:
 
 - Python 3.x installed on your system
 - Git installed on your system
+- FFmpeg installed on your system: follow the install instructions here (for Windows): https://www.wikihow.com/Install-FFmpeg-on-Windows
+- Create a .env file in the root folder of the project with the discord token: [DISCORD_TOKEN=...]
 
 ### Installation
 
