@@ -136,6 +136,7 @@ class ConfirmButton(ui.Button):
                         f"An error occurred while trying to join the voice channel: {e}",
                         ephemeral=True,
                     )
+                    await VC.disconnect()
             else:
                 await interaction.followup.send(
                     "You are not connected to a voice channel.", ephemeral=True
