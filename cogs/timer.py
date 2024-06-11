@@ -5,7 +5,7 @@ from discord import (
     Button,
     ButtonStyle,
     Interaction,
-    Component,
+    app_commands,
     FFmpegPCMAudio,
 )
 import asyncio
@@ -108,7 +108,6 @@ class ConfirmButton(ui.Button):
             await interaction.response.send_message(
                 f"Timer set for {formatTime}. I'll remind you!", ephemeral=True
             )
-            await interaction.message.edit(view=None, delete_after=total_seconds + 2)
 
             await asyncio.sleep(total_seconds)
 
@@ -142,8 +141,6 @@ class ConfirmButton(ui.Button):
                     "You are not connected to a voice channel.", ephemeral=True
                 )
 
-            # Play sound from sound board
-
             await interaction.followup.send(
                 "Time's up! gimme your money", ephemeral=True
             )
@@ -164,13 +161,19 @@ class TimerView(ui.View):
 
 ### Timer command class ###
 class Timer(commands.Cog):
-    def __init__(self, client: commands.Bot) -> None:
+    def __init__(self, client) -> None:
         self.client = client
 
-    @commands.command(aliases=["t"])
-    async def timer(self, ctx: commands.Context) -> None:
+    @app_commands.command(
+        name="timer", description="Create a timer for the weekly meetings"
+    )
+    async def timer(self, interaction: Interaction) -> None:
         view = TimerView()
-        await ctx.reply("Please provide the time using the dropdowns below:", view=view)
+        await interaction.response.send_message(
+            "Please provide the time using the dropdowns below:",
+            view=view,
+            ephemeral=True,
+        )
 
 
 async def setup(client: commands.Bot):

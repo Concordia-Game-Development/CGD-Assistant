@@ -1,9 +1,8 @@
 from typing import Final
 import os, asyncio
 from dotenv import load_dotenv
-from discord import Intents, Client, Message, Embed, File
+from discord import Intents, Client, Message, Embed, File, app_commands, Interaction
 from discord.ext import commands
-from responses import getResponse
 
 # Load environment variables
 load_dotenv()
@@ -14,7 +13,16 @@ extensions: Final[list[str]] = ["cogs.timer"]
 intents: Intents = Intents.default()
 intents.message_content = True
 intents.voice_states = True
-client: Client = commands.Bot(command_prefix="!", intents=intents, help_command=None)
+client: Client = commands.Bot(intents=intents, help_command=None, command_prefix="!")
+
+# Define a tree for slash commands
+tree = client.tree
+
+
+# Load cogs
+async def loadCogs() -> None:
+    for extension in extensions:
+        await client.load_extension(extension)
 
 
 # Event: Bot is ready
@@ -23,34 +31,36 @@ async def on_ready() -> None:
     print(f"{client.user} has connected to Discord!")
 
 
-# Simple Commands
-@client.command(aliases=["h"])
-async def help(ctx) -> None:
+# Help Commands
+@tree.command(name="help", description="Display all available commands")
+async def help(interaction: Interaction) -> None:
     file = File("img/pink.png", filename="pink.png")
     help_embed = Embed(
         title="How to use CGDAssistant",
         description="List of available commands:",
         color=0xCF3A65,
-        timestamp=ctx.message.created_at,
+        timestamp=interaction.created_at,
     )
     help_embed.set_thumbnail(url="attachment://pink.png")
     help_embed.add_field(
-        name="!help", value="Display all available commands", inline=True
+        name="/help", value="Display all available commands", inline=True
     )
     help_embed.add_field(
-        name="!reminder",
+        name="/reminder",
         value="Create a reminder for a task or a reccuring event",
         inline=True,
     )
     help_embed.add_field(
-        name="!timer", value="Create a timer for the weekly meetings", inline=True
+        name="/timer", value="Create a timer for the weekly meetings", inline=True
     )
-    await ctx.send(file=file, embed=help_embed)
+    await interaction.response.send_message(file=file, embed=help_embed)
 
 
-async def loadCogs() -> None:
-    for extension in extensions:
-        await client.load_extension(extension)
+# Sync commands
+@client.command(name="sync", description="Sync commands with Discord")
+async def sync(ctx) -> None:
+    await client.tree.sync()
+    await ctx.reply("Commands synced with Discord!", ephemeral=True)
 
 
 # Main entry point
