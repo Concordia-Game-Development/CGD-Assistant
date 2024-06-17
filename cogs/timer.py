@@ -95,10 +95,38 @@ class ConfirmButton(ui.Button):
 
         return time_str.strip()
 
-    async def callback(self, interaction: Interaction):
-        total_seconds = (
-            self.view.seconds + (self.view.minutes * 60) + (self.view.hours * 3600)
-        )
+    async def playJingle(self, interaction: Interaction):
+        if interaction.user.voice:
+            channel = interaction.user.voice.channel
+            try:
+                # Join the voice channel
+                VC = await channel.connect()
+                # await interaction.followup.send(f"Joined {channel}", ephemeral=True)
+
+                # Play sound
+                alarm = "sounds/DONE.mp3"  # Replace with actual path
+                source = FFmpegPCMAudio(alarm)
+                print(source)
+                VC.play(source)
+
+                while VC.is_playing():
+                    await asyncio.sleep(1)
+
+                # Disconnect after playing the sound
+                await VC.disconnect()
+
+            except Exception as e:
+                await interaction.followup.send(
+                    f"An error occurred while trying to join the voice channel: {e}",
+                    ephemeral=True,
+                )
+                await VC.disconnect()
+        else:
+            await interaction.followup.send(
+                "You are not connected to a voice channel.", ephemeral=True
+            )
+
+    async def checkTimer(self, interaction: Interaction, total_seconds: int):
         if total_seconds <= 0:
             await interaction.response.send_message(
                 "You need to set a time greater than 0 seconds.", ephemeral=True
@@ -111,39 +139,17 @@ class ConfirmButton(ui.Button):
 
             await asyncio.sleep(total_seconds)
 
-            if interaction.user.voice:
-                channel = interaction.user.voice.channel
-                try:
-                    # Join the voice channel
-                    VC = await channel.connect()
-                    # await interaction.followup.send(f"Joined {channel}", ephemeral=True)
-
-                    # Play sound
-                    alarm = "sounds/DONE.mp3"  # Replace with actual path
-                    source = FFmpegPCMAudio(alarm)
-                    print(source)
-                    VC.play(source)
-
-                    while VC.is_playing():
-                        await asyncio.sleep(1)
-
-                    # Disconnect after playing the sound
-                    await VC.disconnect()
-
-                except Exception as e:
-                    await interaction.followup.send(
-                        f"An error occurred while trying to join the voice channel: {e}",
-                        ephemeral=True,
-                    )
-                    await VC.disconnect()
-            else:
-                await interaction.followup.send(
-                    "You are not connected to a voice channel.", ephemeral=True
-                )
+            await self.playJingle(interaction)
 
             await interaction.followup.send(
                 "Time's up! gimme your money", ephemeral=True
             )
+
+    async def callback(self, interaction: Interaction):
+        total_seconds = (
+            self.view.seconds + (self.view.minutes * 60) + (self.view.hours * 3600)
+        )
+        await self.checkTimer(interaction, total_seconds)
 
 
 ### Viewing class ###
