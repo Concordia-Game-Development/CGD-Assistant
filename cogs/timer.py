@@ -190,8 +190,10 @@ class TimerGroup(app_commands.Group):
     ### set_alarm command (subcommand #2)###
     @app_commands.command(name="set_alarm", description="Set timer ringtone")
     async def set_ringtone(self, interaction: Interaction) -> None:
-        await interaction.response.send_message("Set ringtone command called")
         # youtube API will be used to play the sound
+        await interaction.response.send_message(
+            "New timer ringtone set!", ephemeral=True
+        )
 
 
 ### Timer command class ###
