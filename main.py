@@ -56,7 +56,7 @@ async def help(interaction: Interaction) -> None:
         inline=True,
     )
     help_embed.add_field(
-        name="/timer set_alarm",
+        name="/timer set_ringtone",
         value="Change the ringtone for the timer using Youtube API",
         inline=True,
     )
