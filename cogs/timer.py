@@ -166,21 +166,37 @@ class TimerView(ui.View):
         self.add_item(ConfirmButton())
 
 
-### Timer command class ###
-class Timer(commands.Cog):
-    def __init__(self, client) -> None:
-        self.client = client
+### TimerGroup class ###
+class TimerGroup(app_commands.Group):
+    def __init__(self):
+        super().__init__(name="timer", description="Manage timer")
 
     @app_commands.command(
-        name="timer", description="Create a timer for the weekly meetings"
+        name="set_timer", description="Create a timer for the weekly meetings"
     )
-    async def timer(self, interaction: Interaction) -> None:
+    async def set_timer(self, interaction: Interaction) -> None:
         view = TimerView()
         await interaction.response.send_message(
             "Please provide the time using the dropdowns below:",
             view=view,
             ephemeral=True,
         )
+
+    @app_commands.command(name="set_alarm", description="Set timer ringtone")
+    async def set_ringtone(self, interaction: Interaction) -> None:
+        await interaction.response.send_message("Set ringtone command called")
+        # youtube API will be used to play the sound
+
+
+### Timer command class ###
+class Timer(commands.Cog):
+    def __init__(self, client) -> None:
+        self.client = client
+        self.client.tree.add_command(TimerGroup())
+
+    @commands.Cog.listener()
+    async def on_ready(self):
+        print(f"Cog Timer is ready")
 
 
 async def setup(client: commands.Bot):
