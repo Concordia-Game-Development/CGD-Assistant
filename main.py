@@ -51,7 +51,14 @@ async def help(interaction: Interaction) -> None:
         inline=True,
     )
     help_embed.add_field(
-        name="/timer", value="Create a timer for the weekly meetings", inline=True
+        name="/timer set_timer",
+        value="Create a timer for the weekly meetings",
+        inline=True,
+    )
+    help_embed.add_field(
+        name="/timer set_ringtone",
+        value="Change the ringtone for the timer using Youtube API",
+        inline=True,
     )
     await interaction.response.send_message(file=file, embed=help_embed)
 

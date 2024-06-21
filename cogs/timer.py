@@ -95,7 +95,8 @@ class ConfirmButton(ui.Button):
 
         return finalTime.strip()
 
-    async def playJingle(self, interaction: Interaction):
+    ### connectVC function to connect to VC ###
+    async def connectVC(self, interaction: Interaction):
         if interaction.user.voice:
             channel = interaction.user.voice.channel
             try:
@@ -103,14 +104,7 @@ class ConfirmButton(ui.Button):
                 isConnected = await channel.connect()
                 # await interaction.followup.send(f"Joined {channel}", ephemeral=True)
 
-                # Play sound
-                alarmPath = "sounds/DONE.mp3"  # will be replaced with youtube API
-                source = FFmpegPCMAudio(alarmPath)
-                print(source)
-                isConnected.play(source)
-
-                while isConnected.is_playing():
-                    await asyncio.sleep(1)
+                await self.playSound(isConnected)
 
                 # Disconnect after playing the sound
                 await isConnected.disconnect()
@@ -126,6 +120,16 @@ class ConfirmButton(ui.Button):
                 "You are not connected to a voice channel.", ephemeral=True
             )
 
+    async def playSound(self, isConnected):
+        # Play sound
+        alarmPath = "sounds/DONE.mp3"  # will be replaced with youtube API
+        source = FFmpegPCMAudio(alarmPath)
+        isConnected.play(source)
+
+        while isConnected.is_playing():
+            await asyncio.sleep(1)
+
+    ### checkTimer function to check if set time is valid ###
     async def checkTimer(self, interaction: Interaction, total_seconds: int):
         if total_seconds <= 0:
             await interaction.response.send_message(
@@ -140,7 +144,7 @@ class ConfirmButton(ui.Button):
 
             await asyncio.sleep(total_seconds)
 
-            await self.playJingle(interaction)
+            await self.connectVC(interaction)
 
             await interaction.followup.send(
                 "Time's up! gimme your money", ephemeral=True
@@ -166,21 +170,41 @@ class TimerView(ui.View):
         self.add_item(ConfirmButton())
 
 
-### Timer command class ###
-class Timer(commands.Cog):
-    def __init__(self, client) -> None:
-        self.client = client
+### TimerGroup class ###
+class TimerGroup(app_commands.Group):
+    def __init__(self):
+        super().__init__(name="timer", description="Manage timer")
 
+    ### set_timer command (subcommand #1)###
     @app_commands.command(
-        name="timer", description="Create a timer for the weekly meetings"
+        name="set_timer", description="Create a timer for the weekly meetings"
     )
-    async def timer(self, interaction: Interaction) -> None:
+    async def setTimer(self, interaction: Interaction) -> None:
         view = TimerView()
         await interaction.response.send_message(
             "Please provide the time using the dropdowns below:",
             view=view,
             ephemeral=True,
         )
+
+    ### set_alarm command (subcommand #2)###
+    @app_commands.command(name="set_ringtone", description="Set timer ringtone")
+    async def setRingtone(self, interaction: Interaction) -> None:
+        # youtube API will be used to play the sound
+        await interaction.response.send_message(
+            "New timer ringtone set!", ephemeral=True
+        )
+
+
+### Timer command class ###
+class Timer(commands.Cog):
+    def __init__(self, client) -> None:
+        self.client = client
+        self.client.tree.add_command(TimerGroup())
+
+    @commands.Cog.listener()
+    async def on_ready(self):
+        print(f"Cog Timer is ready")
 
 
 async def setup(client: commands.Bot):
