@@ -179,7 +179,7 @@ class TimerGroup(app_commands.Group):
     @app_commands.command(
         name="set_timer", description="Create a timer for the weekly meetings"
     )
-    async def set_timer(self, interaction: Interaction) -> None:
+    async def setTimer(self, interaction: Interaction) -> None:
         view = TimerView()
         await interaction.response.send_message(
             "Please provide the time using the dropdowns below:",
@@ -189,7 +189,7 @@ class TimerGroup(app_commands.Group):
 
     ### set_alarm command (subcommand #2)###
     @app_commands.command(name="set_alarm", description="Set timer ringtone")
-    async def set_ringtone(self, interaction: Interaction) -> None:
+    async def setAlarm(self, interaction: Interaction) -> None:
         # youtube API will be used to play the sound
         await interaction.response.send_message(
             "New timer ringtone set!", ephemeral=True
