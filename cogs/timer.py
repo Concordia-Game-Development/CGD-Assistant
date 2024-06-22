@@ -138,8 +138,9 @@ class ConfirmButton(ui.Button):
         else:
             formattedTime = self.formatTime(total_seconds)
 
-            await interaction.response.send_message(
-                f"Timer set for {formattedTime}. I'll remind you!", ephemeral=True
+            # Update the original ephemeral message to show the timer set status
+            await interaction.response.edit_message(
+                content=f"Timer set for {formattedTime}. I'll remind you!", view=None
             )
 
             await asyncio.sleep(total_seconds)
