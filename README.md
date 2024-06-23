@@ -36,4 +36,3 @@ To get started with this Discord bot, follow these steps:
    pip install -r dependencies.txt
    ```
 
-4. 
