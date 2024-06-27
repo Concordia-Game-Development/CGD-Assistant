@@ -80,6 +80,34 @@ class ConfirmButton(ui.Button):
             custom_id="confirmButton",
         )
 
+    async def callback(self, interaction: Interaction):
+        total_seconds = (
+            self.view.seconds + (self.view.minutes * 60) + (self.view.hours * 3600)
+        )
+        await self.checkTimer(interaction, total_seconds)
+
+    ### checkTimer function to check if set time is valid ###
+    async def checkTimer(self, interaction: Interaction, total_seconds: int):
+        if total_seconds <= 0:
+            await interaction.response.send_message(
+                "You need to set a time greater than 0 seconds.", ephemeral=True
+            )
+        else:
+            formattedTime = self.formatTime(total_seconds)
+
+            # Update the original ephemeral message to show the timer set status
+            await interaction.response.edit_message(
+                content=f"Timer set for {formattedTime}. I'll remind you!", view=None
+            )
+
+            await asyncio.sleep(total_seconds)
+
+            await self.connectVC(interaction)
+
+            await interaction.followup.send(
+                "Time's up! gimme your money", ephemeral=True
+            )
+
     def formatTime(self, seconds):
         hours = seconds // 3600
         minutes = (seconds % 3600) // 60
@@ -128,33 +156,6 @@ class ConfirmButton(ui.Button):
 
         while isConnected.is_playing():
             await asyncio.sleep(1)
-
-    ### checkTimer function to check if set time is valid ###
-    async def checkTimer(self, interaction: Interaction, total_seconds: int):
-        if total_seconds <= 0:
-            await interaction.response.send_message(
-                "You need to set a time greater than 0 seconds.", ephemeral=True
-            )
-        else:
-            formattedTime = self.formatTime(total_seconds)
-
-            await interaction.response.send_message(
-                f"Timer set for {formattedTime}. I'll remind you!", ephemeral=True
-            )
-
-            await asyncio.sleep(total_seconds)
-
-            await self.connectVC(interaction)
-
-            await interaction.followup.send(
-                "Time's up! gimme your money", ephemeral=True
-            )
-
-    async def callback(self, interaction: Interaction):
-        total_seconds = (
-            self.view.seconds + (self.view.minutes * 60) + (self.view.hours * 3600)
-        )
-        await self.checkTimer(interaction, total_seconds)
 
 
 ### Viewing class ###
