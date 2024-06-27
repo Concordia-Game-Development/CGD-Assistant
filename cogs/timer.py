@@ -10,6 +10,8 @@ from discord import (
 )
 import asyncio
 from typing import Final
+from ytRequest import audioDownloadYT
+import os
 
 
 ### seconds class ###
@@ -122,8 +124,12 @@ class ConfirmButton(ui.Button):
 
     async def playSound(self, isConnected):
         # Play sound
-        alarmPath = "sounds/DONE.mp3"  # will be replaced with youtube API
-        source = FFmpegPCMAudio(alarmPath)
+        if customPathExists():
+            ALARM_PATH = "sounds/CUSTOM.mp3"  # custom sound set by user
+        else:
+            ALARM_PATH = "sounds/DONE.mp3"  # default sound
+
+        source = FFmpegPCMAudio(ALARM_PATH)
         isConnected.play(source)
 
         while isConnected.is_playing():
@@ -189,11 +195,23 @@ class TimerGroup(app_commands.Group):
 
     ### set_alarm command (subcommand #2)###
     @app_commands.command(name="set_ringtone", description="Set timer ringtone")
-    async def setRingtone(self, interaction: Interaction) -> None:
-        # youtube API will be used to play the sound
-        await interaction.response.send_message(
-            "New timer ringtone set!", ephemeral=True
-        )
+    async def setRingtone(self, interaction: Interaction, URL: str) -> None:
+        # yt-dlp will be used to download the audio
+        DOWNLOAD_PATH = "sounds/"
+
+        try:
+            # Check if the CUSTOM.mp3 file exists and delete it if it does
+            if customPathExists():
+                os.remove(DOWNLOAD_PATH + "CUSTOM.mp3")
+
+            audioDownloadYT(URL, DOWNLOAD_PATH + "CUSTOM.mp3")
+            await interaction.response.send_message(
+                "New timer ringtone set!", ephemeral=True
+            )
+        except Exception as e:
+            await interaction.response.send_message(
+                f"Failed to set timer ringtone: {str(e)}", ephemeral=True
+            )
 
 
 ### Timer command class ###
@@ -209,3 +227,10 @@ class Timer(commands.Cog):
 
 async def setup(client: commands.Bot):
     await client.add_cog(Timer(client))
+
+
+### functions ###
+
+
+def customPathExists():
+    return os.path.exists("sounds/CUSTOM.mp3")
