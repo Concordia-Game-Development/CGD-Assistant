@@ -31,7 +31,7 @@ To get started with this Discord bot, follow these steps:
 
    ```
 
-3. Install the required dependencies using pip:
+3. Install the required requirements using pip:
    ```sh
-   pip install -r dependencies.txt
+   pip install -r requirements.txt
    ```
