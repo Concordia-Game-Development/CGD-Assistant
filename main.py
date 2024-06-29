@@ -66,8 +66,11 @@ async def help(interaction: Interaction) -> None:
 # Sync commands
 @client.command(name="sync", description="Sync commands with Discord")
 async def sync(ctx) -> None:
-    await client.tree.sync()
-    await ctx.reply("Commands synced with Discord!", ephemeral=True)
+    try:
+        await client.tree.sync()
+        await ctx.reply("Commands synced with Discord!", ephemeral=True)
+    except Exception as e:
+        await ctx.reply(f"Failed to sync commands: {str(e)}", ephemeral=True)
 
 
 # Main entry point
