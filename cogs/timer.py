@@ -10,7 +10,7 @@ from discord import (
 )
 import asyncio
 from typing import Final
-from ytRequest import audioDownloadYT
+from cogs.ytRequest import audioDownloadYT
 import os
 
 
@@ -195,7 +195,15 @@ class TimerGroup(app_commands.Group):
 
     ### set_alarm command (subcommand #2)###
     @app_commands.command(name="set_ringtone", description="Set timer ringtone")
-    async def setRingtone(self, interaction: Interaction, URL: str) -> None:
+    @app_commands.describe(
+        url="The URL of the YouTube video",
+        duration="The duration of the clip in seconds",
+    )
+    async def setRingtone(
+        self, interaction: Interaction, url: str, duration: int
+    ) -> None:
+        # Acknowledge the interaction immediately
+        await interaction.response.defer(ephemeral=True)
         # yt-dlp will be used to download the audio
         DOWNLOAD_PATH = "sounds/"
 
@@ -204,12 +212,10 @@ class TimerGroup(app_commands.Group):
             if customPathExists():
                 os.remove(DOWNLOAD_PATH + "CUSTOM.mp3")
 
-            audioDownloadYT(URL, DOWNLOAD_PATH + "CUSTOM.mp3")
-            await interaction.response.send_message(
-                "New timer ringtone set!", ephemeral=True
-            )
+            audioDownloadYT(url, DOWNLOAD_PATH + "CUSTOM", duration)
+            await interaction.followup.send("New timer ringtone set!", ephemeral=True)
         except Exception as e:
-            await interaction.response.send_message(
+            await interaction.followup.send(
                 f"Failed to set timer ringtone: {str(e)}", ephemeral=True
             )
 

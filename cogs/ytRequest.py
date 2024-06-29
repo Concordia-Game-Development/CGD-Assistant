@@ -1,7 +1,9 @@
 import yt_dlp
 
 
-def audioDownloadYT(URL: str, OUTPUT_PATH: str):
+def audioDownloadYT(
+    URL: str, OUTPUT_PATH: str, DURATION: int, START_TIME: int = 0
+) -> None:
     options = {
         "format": "bestaudio/best",
         "outtmpl": OUTPUT_PATH,
@@ -11,6 +13,12 @@ def audioDownloadYT(URL: str, OUTPUT_PATH: str):
                 "preferredcodec": "mp3",
                 "preferredquality": "192",
             }
+        ],
+        "postprocessor_args": [
+            "-ss",
+            str(START_TIME),  # Start time
+            "-t",
+            str(DURATION),  # Duration of the clip
         ],
     }
 
