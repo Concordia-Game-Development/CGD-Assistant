@@ -216,7 +216,7 @@ class TimerGroup(app_commands.Group):
             await interaction.followup.send("New timer ringtone set!", ephemeral=True)
         except Exception as e:
             await interaction.followup.send(
-                f"Failed to set timer ringtone: {str(e)}", ephemeral=True
+                f"Failed to set timer ringtone: {str(e)}.\nEnsure that you entered a valid YouTube link as well as a positive integer which is lesser or equal to the length of said video.", ephemeral=True
             )
 
 
