@@ -206,18 +206,11 @@ class TimerGroup(app_commands.Group):
         await interaction.response.defer(ephemeral=True)
         # yt-dlp will be used to download the audio
         DOWNLOAD_PATH = "sounds/"
-
         try:
-            # Check if the CUSTOM.mp3 file exists and delete it if it does
-            if customPathExists():
-                os.remove(DOWNLOAD_PATH + "CUSTOM.mp3")
-
             audioDownloadYT(url, DOWNLOAD_PATH + "CUSTOM", duration)
             await interaction.followup.send("New timer ringtone set!", ephemeral=True)
         except Exception as e:
-            await interaction.followup.send(
-                f"Failed to set timer ringtone: {str(e)}.\nEnsure that you entered a valid YouTube link as well as a positive integer which is lesser or equal to the length of said video.", ephemeral=True
-            )
+            await interaction.followup.send(f"{e}", ephemeral=True)
 
 
 ### Timer command class ###
