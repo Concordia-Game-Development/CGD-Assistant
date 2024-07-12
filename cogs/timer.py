@@ -197,7 +197,7 @@ class TimerGroup(app_commands.Group):
     @app_commands.command(name="set_ringtone", description="Set timer ringtone")
     @app_commands.describe(
         url="The URL of the YouTube video",
-        duration="The duration of the clip in seconds",
+        duration="The duration of the clip in seconds (Integer)",
     )
     async def setRingtone(
         self, interaction: Interaction, url: str, duration: int
