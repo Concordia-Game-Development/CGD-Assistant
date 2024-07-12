@@ -25,3 +25,5 @@ def audioDownloadYT(
     if DURATION <= 30:
         with yt_dlp.YoutubeDL(options) as ydl:
             ydl.download([URL])
+    else:
+        raise ValueError("Duration must be less than or equal to 30 seconds")
