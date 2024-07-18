@@ -7,7 +7,7 @@ from discord.ext import commands
 # Load environment variables
 load_dotenv()
 TOKEN: Final[str] = os.getenv("DISCORD_TOKEN")
-extensions: Final[list[str]] = ["cogs.timer"]
+extensions: Final[list[str]] = ["cogs.timer", "cogs.reminder"]
 
 # Bot Setup
 intents: Intents = Intents.default()
