@@ -30,7 +30,7 @@ class RoleDropdown(ui.Select):
     def __init__(self, interaction: Interaction):
         options: Final[list[SelectOption]] = []
         for role in interaction.guild.roles:
-            options.append(SelectOption(label=f"{role}", value=f"{role.id}"))
+            options.append(SelectOption(label=f"{role.name}", value=f"{role.id}"))
         super().__init__(
             placeholder="Roles",
             options=options,
@@ -111,7 +111,7 @@ class mDropdown(ui.Select):
     def __init__(self) -> None:
         options: Final[list[SelectOption]] = []
         for i in range(60):
-            if i % 15 == 0:
+            if i % 5 == 0:
                 options.append(SelectOption(label=f"{i} minutes", value=f"{i}"))
         super().__init__(
             placeholder="Minutes",
@@ -321,22 +321,30 @@ class Reminder(commands.Cog):
                 for reminder in reminders:
                     if (reminder.timestamp == nextReminder):
                         
-                        currentGuild: Guild = None
+                        current_guild: Guild = None
                         for guild in self.client.guilds:
                             if (guild.get_scheduled_event(id) != None):
-                                currentGuild = guild
+                                current_guild = guild
                                 break
                         
-                        generalChannel: TextChannel = None
-                        for channel in currentGuild.text_channels:
+                        general_channel: TextChannel = None
+                        for channel in current_guild.text_channels:
                             if (channel.name == "general"):
-                                generalChannel = channel
+                                general_channel = channel
                                 break
 
-                        await generalChannel.send(
-                            f"REMINDER: **{currentGuild.get_scheduled_event(id).name}** event on " +
-                            f"{reminder.timestamp.astimezone().strftime('**%m/%d** at **%H:%M**')}"
-                        )
+                        reminder_message = ""
+                        for role_id in reminder.roles:
+                            reminder_message += f"<@&{role_id}>"
+                        for member_id in reminder.members:
+                            reminder_message += f"<@{member_id}>"
+
+                        event = current_guild.get_scheduled_event(id)
+                        time_till_event = event.start_time - now
+                        reminder_text = " Reminder: " if time_till_event > datetime.timedelta(hours=1) else " STOP THROWING CHAT! "
+                        reminder_message += reminder_text + f"**{event.name}** event on " + f"{event.start_time.astimezone().strftime('**%m/%d** at **%H:%M**')}"
+                        await general_channel.send(reminder_message)
+
                         reminder_timestamps.remove(nextReminder)
                         reminderToDelete = reminder
                         break
