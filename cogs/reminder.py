@@ -30,7 +30,8 @@ class RoleDropdown(ui.Select):
     def __init__(self, interaction: Interaction):
         options: Final[list[SelectOption]] = []
         for role in interaction.guild.roles:
-            options.append(SelectOption(label=f"{role.name}", value=f"{role.id}"))
+            if (role != interaction.guild.default_role):
+                options.append(SelectOption(label=f"{role.name}", value=f"{role.id}"))
         super().__init__(
             placeholder="Roles",
             options=options,
@@ -182,13 +183,13 @@ class TimeConfirmButton(ui.Button):
         reminder_timestamp = event.start_time - datetime.timedelta(minutes=total_minutes)
         if (reminder_timestamp < datetime.datetime.now(datetime.timezone.utc)):
             await interaction.followup.send(
-                "Error, this timestamp has already passed",
+                "Cannot set a reminder in the past.",
                 ephemeral=True,
             )
             return
 
         await interaction.followup.send(
-            "Select members and roles to ping",
+            "Select the members and roles to ping for the reminder.",
             view=MemberSelectionView(
                 interaction=interaction,
                 event_id=self.view.event_id,
@@ -245,7 +246,7 @@ class EventConfirmButton(ui.Button):
     async def callback(self, interaction: Interaction):
         await interaction.response.defer()
         await interaction.followup.send(
-            "Select timestamp for reminder",
+            "How long before the event do you want the reminder to be sent?",
             view=TimeSelectionView(self.view.selected_event),
             ephemeral=True,
         )
@@ -279,13 +280,13 @@ class ReminderGroup(app_commands.Group):
                 interaction.guild.scheduled_events
             )).__len__() == 0):
             await interaction.response.send_message(
-                "No upcoming events to set reminders for",
+                "No upcoming events to set reminders for.",
                 ephemeral=True,
             )
             return
         
         await interaction.response.send_message(
-            "Select event to set reminder for",
+            "Select an event to set a reminder for.",
             view=EventSelectionView(interaction),
             ephemeral=True,
         )
@@ -306,7 +307,7 @@ class Reminder(commands.Cog):
     async def monitorReminders(self):
         if (reminder_timestamps.__len__() == 0):
             try:
-                await asyncio.sleep(60)
+                await asyncio.Future()
             except asyncio.exceptions.CancelledError:
                 pass
             finally:
@@ -341,8 +342,9 @@ class Reminder(commands.Cog):
 
                         event = current_guild.get_scheduled_event(id)
                         time_till_event = event.start_time - now
-                        reminder_text = " Reminder: " if time_till_event > datetime.timedelta(hours=1) else " STOP THROWING CHAT! "
-                        reminder_message += reminder_text + f"**{event.name}** event on " + f"{event.start_time.astimezone().strftime('**%m/%d** at **%H:%M**')}"
+                        reminder_text = " Reminder:\n" if time_till_event > datetime.timedelta(hours=1) else " STOP THROWING CHAT!\n"
+                        reminder_message += reminder_text + f"[**{event.name}**]({event.url}) event on "
+                        reminder_message += f"{event.start_time.astimezone().strftime('**%m/%d** at **%H:%M**')}!\n"
                         await general_channel.send(reminder_message)
 
                         reminder_timestamps.remove(nextReminder)
