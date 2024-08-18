@@ -11,6 +11,7 @@ extensions: Final[list[str]] = ["cogs.timer", "cogs.reminder"]
 
 # Bot Setup
 intents: Intents = Intents.default()
+intents.members = True
 intents.message_content = True
 intents.voice_states = True
 client: Client = commands.Bot(intents=intents, help_command=None, command_prefix="!")
@@ -46,7 +47,7 @@ async def help(interaction: Interaction) -> None:
         name="/help", value="Display all available commands", inline=True
     )
     help_embed.add_field(
-        name="/reminder",
+        name="/reminder set_reminder",
         value="Create a reminder for a task or a reccuring event",
         inline=True,
     )
